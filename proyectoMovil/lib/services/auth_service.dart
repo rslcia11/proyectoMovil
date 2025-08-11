@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
+import '../utils/app_exceptions.dart'; // Import custom exceptions
 
 class AuthService {
   final String _baseUrl = AppConfig.baseUrl;
@@ -17,30 +18,34 @@ class AuthService {
         }),
       );
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['message'] == 'Login exitoso') {
-          // Save token
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('auth_token', responseData['token']);
-          return {'success': true, 'data': responseData};
-        } else {
-          return {'success': false, 'message': responseData['message'] ?? 'Email o contraseña incorrectos'};
-        }
-      } else {
-        String errorMessage = 'Error del servidor. Intenta nuevamente.';
-        try {
-          final errorData = json.decode(response.body);
-          if (errorData['message'] != null) {
-            errorMessage = errorData['message'];
+      final responseData = json.decode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          if (responseData['message'] == 'Login exitoso') {
+            // Save token
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('auth_token', responseData['token']);
+            return responseData; // Return actual data on success
+          } else {
+            throw BadRequestException(responseData['message'] ?? 'Email o contraseña incorrectos');
           }
-        } catch (e) {
-          errorMessage = 'Error ${response.statusCode}: ${response.body}';
-        }
-        return {'success': false, 'message': errorMessage};
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'Credenciales inválidas');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error durante la comunicación con el servidor: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {'success': false, 'message': 'Error de conexión. Verifica tu internet.'};
+      // Catch any other unexpected errors
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 

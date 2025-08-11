@@ -17,7 +17,6 @@ class FieldService {
   // Crear nueva cancha
   Future<Map<String, dynamic>> createField({
     required int companyId,
-    required String token,
     required String fieldName,
     required String fieldType,
     required String fieldSize,
@@ -27,6 +26,11 @@ class FieldService {
     File? fieldImage,
   }) async {
     try {
+      final token = await _authService.getToken();
+      if (token == null) {
+        throw UnauthorizedException('Token no encontrado');
+      }
+
       var request = http.MultipartRequest(
         'POST',
         Uri.parse('$_baseUrl/fields'),
@@ -57,22 +61,29 @@ class FieldService {
       var response = await request.send();
       var responseData = await response.stream.bytesToString();
 
-      if (response.statusCode == 201) {
-        return {'success': true, 'message': 'Cancha creada exitosamente'};
-      } else {
-        return {
-          'success': false,
-          'message': jsonDecode(responseData)['message'] ?? 'Error desconocido'
-        };
+      switch (response.statusCode) {
+        case 201:
+          return json.decode(responseData); // Return actual data
+        case 400:
+          throw BadRequestException(json.decode(responseData)['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(json.decode(responseData)['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(json.decode(responseData)['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(json.decode(responseData)['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al crear la cancha: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {'success': false, 'message': e.toString()};
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
-  
   }
 
   // Obtener todas las canchas disponibles (para jugadores/clientes) - READ
-  Future<Map<String, dynamic>> getAllFields() async {
+  Future<List<dynamic>> getAllFields() async {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/fields'),
@@ -81,28 +92,29 @@ class FieldService {
         },
       );
 
-      if (response.statusCode == 200) {
-        final dynamic responseData = jsonDecode(response.body);
-        // Manejar tanto si viene como array directo o dentro de un objeto
-        final List<dynamic> fieldsData = responseData is List 
-            ? responseData 
-            : responseData['data'] ?? responseData['fields'] ?? [];
-        
-        return {
-          'success': true,
-          'data': fieldsData,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al cargar las canchas: ${response.statusCode}'
-        };
+      final dynamic responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          // Manejar tanto si viene como array directo o dentro de un objeto
+          return responseData is List 
+              ? responseData 
+              : responseData['data'] ?? responseData['fields'] ?? [];
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al cargar las canchas: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
@@ -116,23 +128,26 @@ class FieldService {
         },
       );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> fieldData = jsonDecode(response.body);
-        return {
-          'success': true,
-          'data': fieldData,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al cargar la cancha: ${response.statusCode}'
-        };
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          return responseData; // Return actual data
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al cargar la cancha: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
@@ -149,9 +164,9 @@ class FieldService {
     File? fieldImage,
   }) async {
     try {
-      final token = await _getToken();
+      final token = await _authService.getToken();
       if (token == null) {
-        return {'success': false, 'message': 'Token no encontrado'};
+        throw UnauthorizedException('Token no encontrado');
       }
 
       String? imageBase64;
@@ -180,23 +195,26 @@ class FieldService {
         body: jsonEncode(body),
       );
 
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': 'Cancha actualizada exitosamente',
-          'data': jsonDecode(response.body)
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al actualizar la cancha: ${response.statusCode}'
-        };
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          return responseData; // Return actual data
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al actualizar la cancha: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
@@ -215,6 +233,7 @@ import 'package:image_picker/image_picker.dart';
 import '../config/app_config.dart';
 import '../di/locator.dart'; // Import locator
 import '../services/auth_service.dart'; // Import AuthService
+import '../utils/app_exceptions.dart'; // Import custom exceptions
 
 class FieldService {
   final String _baseUrl = AppConfig.baseUrl;
@@ -234,7 +253,7 @@ class FieldService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        return {'success': false, 'message': 'Token no encontrado'};
+        throw UnauthorizedException('Token no encontrado');
       }
 
       var request = http.MultipartRequest(
@@ -267,22 +286,29 @@ class FieldService {
       var response = await request.send();
       var responseData = await response.stream.bytesToString();
 
-      if (response.statusCode == 201) {
-        return {'success': true, 'message': 'Cancha creada exitosamente'};
-      } else {
-        return {
-          'success': false,
-          'message': jsonDecode(responseData)['message'] ?? 'Error desconocido'
-        };
+      switch (response.statusCode) {
+        case 201:
+          return json.decode(responseData); // Return actual data
+        case 400:
+          throw BadRequestException(json.decode(responseData)['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(json.decode(responseData)['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(json.decode(responseData)['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(json.decode(responseData)['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al crear la cancha: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {'success': false, 'message': e.toString()};
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
-  
   }
 
   // Obtener todas las canchas disponibles (para jugadores/clientes) - READ
-  Future<Map<String, dynamic>> getAllFields() async {
+  Future<List<dynamic>> getAllFields() async {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/fields'),
@@ -291,28 +317,29 @@ class FieldService {
         },
       );
 
-      if (response.statusCode == 200) {
-        final dynamic responseData = jsonDecode(response.body);
-        // Manejar tanto si viene como array directo o dentro de un objeto
-        final List<dynamic> fieldsData = responseData is List 
-            ? responseData 
-            : responseData['data'] ?? responseData['fields'] ?? [];
-        
-        return {
-          'success': true,
-          'data': fieldsData,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al cargar las canchas: ${response.statusCode}'
-        };
+      final dynamic responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          // Manejar tanto si viene como array directo o dentro de un objeto
+          return responseData is List 
+              ? responseData 
+              : responseData['data'] ?? responseData['fields'] ?? [];
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al cargar las canchas: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
@@ -326,23 +353,26 @@ class FieldService {
         },
       );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> fieldData = jsonDecode(response.body);
-        return {
-          'success': true,
-          'data': fieldData,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al cargar la cancha: ${response.statusCode}'
-        };
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          return responseData; // Return actual data
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al cargar la cancha: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
@@ -361,7 +391,7 @@ class FieldService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        return {'success': false, 'message': 'Token no encontrado'};
+        throw UnauthorizedException('Token no encontrado');
       }
 
       String? imageBase64;
@@ -390,23 +420,26 @@ class FieldService {
         body: jsonEncode(body),
       );
 
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': 'Cancha actualizada exitosamente',
-          'data': jsonDecode(response.body)
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al actualizar la cancha: ${response.statusCode}'
-        };
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          return responseData; // Return actual data
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al actualizar la cancha: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
@@ -415,7 +448,7 @@ class FieldService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        return {'success': false, 'message': 'Token no encontrado'};
+        throw UnauthorizedException('Token no encontrado');
       }
 
       final response = await http.delete(
@@ -426,31 +459,35 @@ class FieldService {
         },
       );
 
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': 'Cancha eliminada exitosamente'
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al eliminar la cancha: ${response.statusCode}'
-        };
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          return responseData; // Return actual data
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al eliminar la cancha: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
   // Obtener canchas de una empresa específica (para el dueño)
-  Future<Map<String, dynamic>> getFieldsByCompany(int companyId) async {
+  Future<List<dynamic>> getFieldsByCompany(int companyId) async {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        return {'success': false, 'message': 'Token no encontrado'};
+        throw UnauthorizedException('Token no encontrado');
       }
 
       final response = await http.get(
@@ -461,27 +498,28 @@ class FieldService {
         },
       );
 
-      if (response.statusCode == 200) {
-        final dynamic responseData = jsonDecode(response.body);
-        final List<dynamic> fieldsData = responseData is List 
-            ? responseData 
-            : responseData['data'] ?? responseData['fields'] ?? [];
-        
-        return {
-          'success': true,
-          'data': fieldsData,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al cargar las canchas: ${response.statusCode}'
-        };
+      final dynamic responseData = jsonDecode(response.body);
+
+      switch (response.statusCode) {
+        case 200:
+          return responseData is List 
+              ? responseData 
+              : responseData['data'] ?? responseData['fields'] ?? [];
+        case 400:
+          throw BadRequestException(responseData['message'] ?? 'Solicitud inválida');
+        case 401:
+          throw UnauthorizedException(responseData['message'] ?? 'No autorizado');
+        case 404:
+          throw NotFoundException(responseData['message'] ?? 'Recurso no encontrado');
+        case 500:
+          throw InternalServerErrorException(responseData['message'] ?? 'Error interno del servidor');
+        default:
+          throw FetchDataException('Error al cargar las canchas: ${response.statusCode}');
       }
+    } on SocketException {
+      throw FetchDataException('No hay conexión a Internet. Verifica tu conexión.');
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      throw FetchDataException('Ocurrió un error inesperado: ${e.toString()}');
     }
   }
 
@@ -499,75 +537,4 @@ class FieldService {
   }
 }
 
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': 'Cancha eliminada exitosamente'
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al eliminar la cancha: ${response.statusCode}'
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
-    }
-  }
-
-  // Obtener canchas de una empresa específica (para el dueño)
-  Future<Map<String, dynamic>> getFieldsByCompany(int companyId) async {
-    try {
-      final token = await _getToken();
-      if (token == null) {
-        return {'success': false, 'message': 'Token no encontrado'};
-      }
-
-      final response = await http.get(
-        Uri.parse('$_baseUrl/fields?company_id=$companyId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = jsonDecode(response.body);
-        final List<dynamic> fieldsData = responseData is List 
-            ? responseData 
-            : responseData['data'] ?? responseData['fields'] ?? [];
-        
-        return {
-          'success': true,
-          'data': fieldsData,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'Error al cargar las canchas: ${response.statusCode}'
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
-    }
-  }
-
-  // Obtener tipos de campo disponibles
-  List<String> getFieldTypes() {
-    return [
-      'Fútbol 5',
-      'Fútbol 7',
-      'Fútbol 11',
-      'Basquet 3x3',
-      'Basquet 5x5',
-      'Tenis',
-      'EcuaVoley'
-    ];
-  }
-}
+      
