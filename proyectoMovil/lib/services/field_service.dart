@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart'; // Import AppConfig
 
 class FieldService {
-  static const String baseUrl = 'http://localhost:3000'; // Cambia por tu URL
+  static const String baseUrl = AppConfig.baseUrl; // Use AppConfig.baseUrl
   
   // Obtener token guardado
   static Future<String?> _getToken() async {

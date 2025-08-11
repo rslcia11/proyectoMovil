@@ -98,7 +98,7 @@ class ClientHomeScreen extends StatelessWidget {
               title: const Text('Perfil'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/profile', arguments: userData);
+                Navigator.pushNamed(context, AppRoutes.profile, arguments: userData);
               },
             ),
 
@@ -413,7 +413,7 @@ class ClientHomeScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushReplacementNamed(context, AppRoutes.login);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Cerrar Sesión'),

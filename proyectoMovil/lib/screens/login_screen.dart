@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 case 'jugador':
                   Navigator.pushReplacementNamed(
                     context,
-                    '/client-home',
+                    AppRoutes.clientHome,
                     arguments: userDataForNavigation,
                   );
                   break;
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 case 'dueno':
                   Navigator.pushReplacementNamed(
                     context,
-                    '/owner-home',
+                    AppRoutes.ownerHome,
                     arguments: userDataForNavigation,
                   );
                   break;
@@ -93,14 +93,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                   Navigator.pushReplacementNamed(
                     context,
-                    '/client-home',
+                    AppRoutes.clientHome,
                     arguments: userDataForNavigation,
                   );
                   break;
                 default:
                   Navigator.pushReplacementNamed(
                     context,
-                    '/client-home',
+                    AppRoutes.clientHome,
                     arguments: userDataForNavigation,
                   );
               }
@@ -311,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/forgot-password');
+                    Navigator.pushNamed(context, AppRoutes.forgotPassword);
                   },
                   child: const Text(
                     '¿Olvidaste tu contraseña?',
@@ -335,7 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/register');
+                        Navigator.pushNamed(context, AppRoutes.register);
                       },
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,

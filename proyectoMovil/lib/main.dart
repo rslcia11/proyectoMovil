@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/client_home_screen.dart';
 import 'screens/register_type_screen.dart';
-import 'screens/register_player_screen.dart'; // Nueva importación
+import 'screens/register_player_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/owner_home_screen.dart';
@@ -13,6 +13,8 @@ import 'providers/theme_provider.dart';
 import 'screens/create_field_screen.dart';
 import 'screens/fields_list_screen.dart';
 import 'screens/field_detail_screen.dart';
+import 'utils/app_routes.dart'; // Import AppRoutes
+import 'utils/app_theme.dart'; // Import AppTheme
 
 void main() {
   runApp(
@@ -33,64 +35,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CanchApp',
       themeMode: themeProvider.themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF059669)),
-        useMaterial3: true,
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF059669), width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
-          ),
-          contentPadding: const EdgeInsets.all(16),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF059669),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme, // Use AppTheme for light theme
+      darkTheme: AppTheme.darkTheme, // Use AppTheme for dark theme
       home: const LoginScreen(),
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterTypeScreen(),
-        '/register-player': (context) => const RegisterPlayerScreen(),
-        '/register-owner': (context) => const RegisterOwnerScreen(), // Nueva ruta
-        '/forgot-password': (context) => const ForgotPasswordScreen(),
-        '/client-home': (context) => const ClientHomeScreen(),
-        '/profile': (context) => const ProfileScreen(),
-        '/owner-home': (context) => const OwnerHomeScreen(), //
-        '/create_field': (context) => const CreateFieldScreen(),
-        '/fields_list': (context) => const FieldsListScreen(),
-        '/field_detail': (context) => const FieldDetailScreen(),
+        AppRoutes.login: (context) => const LoginScreen(),
+        AppRoutes.register: (context) => const RegisterTypeScreen(),
+        AppRoutes.registerPlayer: (context) => const RegisterPlayerScreen(),
+        AppRoutes.registerOwner: (context) => const RegisterOwnerScreen(),
+        AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
+        AppRoutes.clientHome: (context) => const ClientHomeScreen(),
+        AppRoutes.profile: (context) => const ProfileScreen(),
+        AppRoutes.ownerHome: (context) => const OwnerHomeScreen(),
+        AppRoutes.createField: (context) => const CreateFieldScreen(),
+        AppRoutes.fieldsList: (context) => const FieldsListScreen(),
+        AppRoutes.fieldDetail: (context) => const FieldDetailScreen(),
       },
     );
   }

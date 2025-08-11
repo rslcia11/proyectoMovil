@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import '../../utils/colors.dart'; // Import AppColors
+import '../../utils/app_routes.dart'; // Import AppRoutes
 
 class OwnerHomeScreen extends StatelessWidget {
   const OwnerHomeScreen({super.key});
@@ -10,7 +12,7 @@ class OwnerHomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Panel de Dueño'),
         centerTitle: true,
-        backgroundColor: const Color(0xFF059669),
+        backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
         elevation: 4,
         actions: [
@@ -21,7 +23,7 @@ class OwnerHomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
-              Navigator.pushNamed(context, '/profile');
+              Navigator.pushNamed(context, AppRoutes.profile);
             },
           ),
         ],
@@ -37,7 +39,7 @@ class OwnerHomeScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF059669),
+                color: AppColors.primaryGreen,
               ),
             ),
             const SizedBox(height: 15),
@@ -49,10 +51,10 @@ class OwnerHomeScreen extends StatelessWidget {
               crossAxisSpacing: 15,
               mainAxisSpacing: 15,
               children: [
-                _buildSummaryCard('Reservas Hoy', '12', MdiIcons.calendarCheck, Colors.blue),
-                _buildSummaryCard('Ingresos Mensuales', '\$2,450', MdiIcons.cash, Colors.green),
-                _buildSummaryCard('Canchas Activas', '4', MdiIcons.soccerField, Colors.orange),
-                _buildSummaryCard('Clientes Nuevos', '8', MdiIcons.accountGroup, Colors.purple),
+                _buildSummaryCard('Reservas Hoy', '12', MdiIcons.calendarCheck, AppColors.primaryBlue),
+                _buildSummaryCard('Ingresos Mensuales', '\$2,450', MdiIcons.cash, AppColors.primaryGreen),
+                _buildSummaryCard('Canchas Activas', '4', MdiIcons.soccerField, AppColors.primaryOrange),
+                _buildSummaryCard('Clientes Nuevos', '8', MdiIcons.accountGroup, AppColors.primaryPurple),
               ],
             ),
 
@@ -62,7 +64,7 @@ class OwnerHomeScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF059669),
+                color: AppColors.primaryGreen,
               ),
             ),
             const SizedBox(height: 15),
@@ -72,10 +74,10 @@ class OwnerHomeScreen extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               childAspectRatio: 0.9,
               children: [
-                _buildActionButton(context, 'Agregar Cancha', Icons.add, Colors.blue),
-                _buildActionButton(context, 'Reservas', Icons.calendar_today, Colors.green),
-                _buildActionButton(context, 'Clientes', Icons.people, Colors.orange),
-                _buildActionButton(context, 'Reportes', Icons.bar_chart, Colors.purple),
+                _buildActionButton(context, 'Agregar Cancha', Icons.add, AppColors.primaryBlue, () => Navigator.pushNamed(context, AppRoutes.createField)),
+                _buildActionButton(context, 'Reservas', Icons.calendar_today, AppColors.primaryGreen, () => Navigator.pushNamed(context, AppRoutes.ownerBookings)),
+                _buildActionButton(context, 'Clientes', Icons.people, AppColors.primaryOrange, () => Navigator.pushNamed(context, AppRoutes.ownerClients)),
+                _buildActionButton(context, 'Reportes', Icons.bar_chart, AppColors.primaryPurple, () => Navigator.pushNamed(context, AppRoutes.ownerReports)),
               ],
             ),
 
@@ -88,14 +90,14 @@ class OwnerHomeScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF059669),
+                    color: AppColors.primaryGreen,
                   ),
                 ),
                 TextButton(
                   onPressed: () {},
                   child: const Text(
                     'Ver Todas',
-                    style: TextStyle(color: Color(0xFF059669)),
+                    style: TextStyle(color: AppColors.primaryGreen),
                   ),
                 ),
               ],
@@ -111,7 +113,7 @@ class OwnerHomeScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF059669),
+                color: AppColors.primaryGreen,
               ),
             ),
             const SizedBox(height: 15),
@@ -159,12 +161,12 @@ class OwnerHomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        backgroundColor: const Color(0xFF059669),
+        backgroundColor: AppColors.primaryGreen,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
-        selectedItemColor: const Color(0xFF059669),
+        selectedItemColor: AppColors.primaryGreen,
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
@@ -220,46 +222,6 @@ class OwnerHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String label, IconData icon, Color color) {
-    return GestureDetector(
-      onTap: () {
-        switch (label) {
-          case 'Agregar Cancha':
-            Navigator.pushNamed(context, '/create_field');
-            break;
-          case 'Reservas':
-            Navigator.pushNamed(context, '/owner_bookings');
-            break;
-          case 'Clientes':
-            Navigator.pushNamed(context, '/owner_clients');
-            break;
-          case 'Reportes':
-            Navigator.pushNamed(context, '/owner_reports');
-            break;
-        }
-      },
-      child: Column(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(icon, size: 30, color: color),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildReservationItem(String court, String client, String time) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -268,15 +230,15 @@ class OwnerHomeScreen extends StatelessWidget {
       ),
       child: ListTile(
         leading: const CircleAvatar(
-          backgroundColor: Color(0xFFE6F7F0),
-          child: Icon(Icons.sports_soccer, color: Color(0xFF059669)),
+          backgroundColor: AppColors.gray100,
+          child: Icon(Icons.sports_soccer, color: AppColors.primaryGreen),
         ),
         title: Text(court, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(client),
         trailing: Text(
           time,
           style: const TextStyle(
-            color: Color(0xFF059669),
+            color: AppColors.primaryGreen,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -293,7 +255,7 @@ class OwnerHomeScreen extends StatelessWidget {
             height: height / 3,
             width: 20,
             decoration: BoxDecoration(
-              color: const Color(0xFF059669),
+              color: AppColors.primaryGreen,
               borderRadius: BorderRadius.circular(5),
             ),
           ),
@@ -303,4 +265,3 @@ class OwnerHomeScreen extends StatelessWidget {
       ),
     );
   }
-}

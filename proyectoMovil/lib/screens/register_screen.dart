@@ -362,9 +362,9 @@ class _RegisterTypeScreenState extends State<RegisterTypeScreen>
 
   void _navigateToRegistration() {
     if (selectedUserType == userTypeClient) {
-      Navigator.pushNamed(context, '/register-client');
+      Navigator.pushNamed(context, AppRoutes.registerPlayer);
     } else if (selectedUserType == userTypeOwner) {
-      Navigator.pushNamed(context, '/register-owner');
+      Navigator.pushNamed(context, AppRoutes.registerOwner);
     }
   }
 }
