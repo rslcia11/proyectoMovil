@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../utils/colors.dart';
 import '../widgets/base_screen.dart';
 import '../di/locator.dart'; // Import locator
-import '../services/field_service.dart'; // Import FieldService
+import '../services/auth_service.dart'; // Import AuthService
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,8 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
-  // Get FieldService instance from locator
-  final FieldService _fieldService = locator<FieldService>();
+  // Get AuthService instance from locator
+  final AuthService _authService = locator<AuthService>();
 
   @override
   void dispose() {
@@ -37,107 +36,74 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        // Realizar petición HTTP al backend
-        final response = await http.post(
-          Uri.parse('http://localhost:3000/api/login'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'user_email': _emailController.text,
-            'user_hashed_password': _passwordController.text,
-          }),
+        final response = await _authService.login(
+          _emailController.text,
+          _passwordController.text,
         );
 
         setState(() {
           _isLoading = false;
         });
 
-        print('Status Code: ${response.statusCode}');
-        print('Response Body: ${response.body}');
+        if (response['success']) {
+          final responseData = response['data'];
+          final userData = responseData['user'];
+          final userRole = userData['role'];
 
-        if (response.statusCode == 200) {
-          final responseData = json.decode(response.body);
-          
-          if (responseData['message'] == 'Login exitoso') {
-            final userData = responseData['user'];
-            final userRole = userData['role'];
+          if (mounted) {
+            final userDataForNavigation = {
+              'userName': userData['name'],
+              'userEmail': userData['email'],
+              'profilePhoto': '',
+              'userPhone': '',
+              'userRole': userRole,
+              'userId': userData['id'],
+              'token': responseData['token'],
+            };
 
-            if (mounted) {
-              final userDataForNavigation = {
-                'userName': userData['name'],
-                'userEmail': userData['email'],
-                'profilePhoto': '',
-                'userPhone': '',
-                'userRole': userRole,
-                'userId': userData['id'],
-                'token': responseData['token'],
-              };
-
-              // SOLO SE MODIFICÓ ESTA SECCIÓN
-              switch (userRole) {
-                case 'jugador':
-                  Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.clientHome,
-                    arguments: userDataForNavigation,
-                  );
-                  break;
-                case 'dueño':
-                case 'dueno':
-                  Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.ownerHome,
-                    arguments: userDataForNavigation,
-                  );
-                  break;
-                case 'administrador':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Pantalla de administrador en desarrollo. Accediendo como jugador temporalmente.'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                  Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.clientHome,
-                    arguments: userDataForNavigation,
-                  );
-                  break;
-                default:
-                  Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.clientHome,
-                    arguments: userDataForNavigation,
-                  );
-              }
-            }
-          } else {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(responseData['message'] ?? 'Email o contraseña incorrectos'),
-                  backgroundColor: Colors.red,
-                ),
-              );
+            switch (userRole) {
+              case 'jugador':
+                Navigator.pushReplacementNamed(
+                  context,
+                  AppRoutes.clientHome,
+                  arguments: userDataForNavigation,
+                );
+                break;
+              case 'dueño':
+              case 'dueno':
+                Navigator.pushReplacementNamed(
+                  context,
+                  AppRoutes.ownerHome,
+                  arguments: userDataForNavigation,
+                );
+                break;
+              case 'administrador':
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Pantalla de administrador en desarrollo. Accediendo como jugador temporalmente.'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                Navigator.pushReplacementNamed(
+                  context,
+                  AppRoutes.clientHome,
+                  arguments: userDataForNavigation,
+                );
+                break;
+              default:
+                Navigator.pushReplacementNamed(
+                  context,
+                  AppRoutes.clientHome,
+                  arguments: userDataForNavigation,
+                );
             }
           }
         } else {
-          String errorMessage = 'Error del servidor. Intenta nuevamente.';
-          
-          try {
-            final errorData = json.decode(response.body);
-            if (errorData['message'] != null) {
-              errorMessage = errorData['message'];
-            }
-          } catch (e) {
-            errorMessage = 'Error ${response.statusCode}: ${response.body}';
-          }
-          
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(errorMessage),
+                content: Text(response['message'] ?? 'Error desconocido'),
                 backgroundColor: Colors.red,
-                duration: const Duration(seconds: 5),
               ),
             );
           }
@@ -146,11 +112,10 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isLoading = false;
         });
-        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error de conexión. Verifica tu internet.'),
+            SnackBar(
+              content: Text(e.toString()),
               backgroundColor: Colors.red,
             ),
           );
