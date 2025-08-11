@@ -15,8 +15,10 @@ import 'screens/fields_list_screen.dart';
 import 'screens/field_detail_screen.dart';
 import 'utils/app_routes.dart'; // Import AppRoutes
 import 'utils/app_theme.dart'; // Import AppTheme
+import 'di/locator.dart'; // Import locator
 
 void main() {
+  setupLocator(); // Initialize GetIt
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),

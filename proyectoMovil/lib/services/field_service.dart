@@ -6,16 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart'; // Import AppConfig
 
 class FieldService {
-  static const String baseUrl = AppConfig.baseUrl; // Use AppConfig.baseUrl
+  final String _baseUrl = AppConfig.baseUrl; // Use AppConfig.baseUrl
   
   // Obtener token guardado
-  static Future<String?> _getToken() async {
+  Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('auth_token');
   }
 
   // Crear nueva cancha
-  static Future<Map<String, dynamic>> createField({
+  Future<Map<String, dynamic>> createField({
     required int companyId,
     required String token,
     required String fieldName,
@@ -29,7 +29,7 @@ class FieldService {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('$baseUrl/fields'),
+        Uri.parse('$_baseUrl/fields'),
       );
 
       // Agregar headers con token
@@ -72,10 +72,10 @@ class FieldService {
   }
 
   // Obtener todas las canchas disponibles (para jugadores/clientes) - READ
-  static Future<Map<String, dynamic>> getAllFields() async {
+  Future<Map<String, dynamic>> getAllFields() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/fields'),
+        Uri.parse('$_baseUrl/fields'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -107,10 +107,10 @@ class FieldService {
   }
 
   // Obtener una cancha específica por ID
-  static Future<Map<String, dynamic>> getFieldById(int fieldId) async {
+  Future<Map<String, dynamic>> getFieldById(int fieldId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/fields/$fieldId'),
+        Uri.parse('$_baseUrl/fields/$fieldId'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -137,7 +137,7 @@ class FieldService {
   }
 
   // Actualizar cancha - UPDATE
-  static Future<Map<String, dynamic>> updateField({
+  Future<Map<String, dynamic>> updateField({
     required int fieldId,
     required int companyId,
     required String fieldName,
@@ -172,7 +172,7 @@ class FieldService {
       };
 
       final response = await http.put(
-        Uri.parse('$baseUrl/fields/$fieldId'),
+        Uri.parse('$_baseUrl/fields/$fieldId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -201,7 +201,7 @@ class FieldService {
   }
 
   // Eliminar cancha - DELETE
-  static Future<Map<String, dynamic>> deleteField(int fieldId) async {
+  Future<Map<String, dynamic>> deleteField(int fieldId) async {
     try {
       final token = await _getToken();
       if (token == null) {
@@ -209,7 +209,7 @@ class FieldService {
       }
 
       final response = await http.delete(
-        Uri.parse('$baseUrl/fields/$fieldId'),
+        Uri.parse('$_baseUrl/fields/$fieldId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -236,7 +236,7 @@ class FieldService {
   }
 
   // Obtener canchas de una empresa específica (para el dueño)
-  static Future<Map<String, dynamic>> getFieldsByCompany(int companyId) async {
+  Future<Map<String, dynamic>> getFieldsByCompany(int companyId) async {
     try {
       final token = await _getToken();
       if (token == null) {
@@ -244,7 +244,7 @@ class FieldService {
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl/fields?company_id=$companyId'),
+        Uri.parse('$_baseUrl/fields?company_id=$companyId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -276,7 +276,7 @@ class FieldService {
   }
 
   // Obtener tipos de campo disponibles
-  static List<String> getFieldTypes() {
+  List<String> getFieldTypes() {
     return [
       'Fútbol 5',
       'Fútbol 7',

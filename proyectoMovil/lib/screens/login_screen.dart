@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../utils/colors.dart';
 import '../widgets/base_screen.dart';
+import '../di/locator.dart'; // Import locator
+import '../services/field_service.dart'; // Import FieldService
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +19,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+
+  // Get FieldService instance from locator
+  final FieldService _fieldService = locator<FieldService>();
 
   @override
   void dispose() {
