@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        final response = await _authService.login(
+        final responseData = await _authService.login(
           _emailController.text,
           _passwordController.text,
         );
@@ -45,68 +45,68 @@ class _LoginScreenState extends State<LoginScreen> {
           _isLoading = false;
         });
 
-        if (response['success']) {
-          final responseData = response['data'];
+        if (mounted) {
           final userData = responseData['user'];
           final userRole = userData['role'];
 
-          if (mounted) {
-            final userDataForNavigation = {
-              'userName': userData['name'],
-              'userEmail': userData['email'],
-              'profilePhoto': '',
-              'userPhone': '',
-              'userRole': userRole,
-              'userId': userData['id'],
-              'token': responseData['token'],
-            };
+          final userDataForNavigation = {
+            'userName': userData['name'],
+            'userEmail': userData['email'],
+            'profilePhoto': '',
+            'userPhone': '',
+            'userRole': userRole,
+            'userId': userData['id'],
+            'token': responseData['token'],
+          };
 
-            switch (userRole) {
-              case 'jugador':
-                Navigator.pushReplacementNamed(
-                  context,
-                  AppRoutes.clientHome,
-                  arguments: userDataForNavigation,
-                );
-                break;
-              case 'dueño':
-              case 'dueno':
-                Navigator.pushReplacementNamed(
-                  context,
-                  AppRoutes.ownerHome,
-                  arguments: userDataForNavigation,
-                );
-                break;
-              case 'administrador':
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Pantalla de administrador en desarrollo. Accediendo como jugador temporalmente.'),
-                    backgroundColor: Colors.orange,
-                  ),
-                );
-                Navigator.pushReplacementNamed(
-                  context,
-                  AppRoutes.clientHome,
-                  arguments: userDataForNavigation,
-                );
-                break;
-              default:
-                Navigator.pushReplacementNamed(
-                  context,
-                  AppRoutes.clientHome,
-                  arguments: userDataForNavigation,
-                );
-            }
+          switch (userRole) {
+            case 'jugador':
+              Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.clientHome,
+                arguments: userDataForNavigation,
+              );
+              break;
+            case 'dueño':
+            case 'dueno':
+              Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.ownerHome,
+                arguments: userDataForNavigation,
+              );
+              break;
+            case 'administrador':
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Pantalla de administrador en desarrollo. Accediendo como jugador temporalmente.'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.clientHome,
+                arguments: userDataForNavigation,
+              );
+              break;
+            default:
+              Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.clientHome,
+                arguments: userDataForNavigation,
+              );
           }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(response['message'] ?? 'Error desconocido'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+        }
+      } on AppException catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.message),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       } catch (e) {
         setState(() {
@@ -114,8 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
+            const SnackBar(
+              content: Text('Ocurrió un error inesperado. Intenta de nuevo.'),
               backgroundColor: Colors.red,
             ),
           );

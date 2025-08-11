@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'field.g.dart'; // This file will be generated
+
+@JsonSerializable()
 class Field {
   final int fieldId;
   final int companyId;
@@ -25,37 +30,8 @@ class Field {
     required this.fieldDelete,
   });
 
-  factory Field.fromJson(Map<String, dynamic> json) {
-    return Field(
-      fieldId: json['field_id'] ?? 0,
-      companyId: json['company_id'] ?? 0,
-      fieldName: json['field_name'] ?? '',
-      fieldType: json['field_type'] ?? '',
-      fieldSize: json['field_size'] ?? '',
-      fieldMaxCapacity: json['field_max_capacity'],
-      fieldHourPrice: (json['field_hour_price'] ?? 0).toDouble(),
-      fieldDescription: json['field_description'] ?? '',
-      fieldImg: json['field_img'],
-      fieldCalification: json['field_calification']?.toDouble(),
-      fieldDelete: json['field_delete'] ?? false,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'field_id': fieldId,
-      'company_id': companyId,
-      'field_name': fieldName,
-      'field_type': fieldType,
-      'field_size': fieldSize,
-      'field_max_capacity': fieldMaxCapacity,
-      'field_hour_price': fieldHourPrice,
-      'field_description': fieldDescription,
-      'field_img': fieldImg,
-      'field_calification': fieldCalification,
-      'field_delete': fieldDelete,
-    };
-  }
+  factory Field.fromJson(Map<String, dynamic> json) => _$FieldFromJson(json);
+  Map<String, dynamic> toJson() => _$FieldToJson(this);
 
   // Getter para obtener el icono según el tipo de cancha
   String get fieldIcon {
@@ -68,7 +44,6 @@ class Field {
       case 'Basquet 5x5':
         return '🏀';
       case 'Tenis':
-        return '🎾';
       case 'EcuaVoley':
         return '🏐';
       default:
@@ -84,6 +59,6 @@ class Field {
 
   // Getter para el precio formateado
   String get formattedPrice {
-    return '\$${fieldHourPrice.toStringAsFixed(2)}/hora';
+    return '\${fieldHourPrice.toStringAsFixed(2)}/hora';
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/colors.dart';
+import '../../utils/app_exceptions.dart'; // Import AppExceptions
 
 class ClientHomeScreen extends StatelessWidget {
   const ClientHomeScreen({super.key});
@@ -15,40 +16,52 @@ class ClientHomeScreen extends StatelessWidget {
     final String userEmail = userData?['userEmail'] ?? 'usuario@email.com';
     final String profilePhoto = userData?['profilePhoto'] ?? '';
 
-    // Lista simulada de canchas (podrás reemplazar con datos del backend)
-    final List<Map<String, dynamic>> canchas = [
-      {
-        'id': 1,
-        'nombre': 'Cancha La Pelota',
-        'ubicacion': 'Av. Principal 123',
-        'precio': 25.0,
-        'tipo': 'Fútbol 11',
-        'disponible': true,
-        'imagen': 'https://ejemplo.com/cancha1.jpg',
-      },
-      {
-        'id': 2,
-        'nombre': 'Cancha El Gol',
-        'ubicacion': 'Calle Secundaria 456',
-        'precio': 20.0,
-        'tipo': 'Fútbol 7',
-        'disponible': true,
-        'imagen': 'https://ejemplo.com/cancha2.jpg',
-      },
-      {
-        'id': 3,
-        'nombre': 'Cancha Champions',
-        'ubicacion': 'Centro Deportivo Norte',
-        'precio': 30.0,
-        'tipo': 'Fútbol 11',
-        'disponible': false,
-        'imagen': 'https://ejemplo.com/cancha3.jpg',
-      },
-    ];
+    List<Map<String, dynamic>> canchasDisponibles = [];
+    String? errorMessage;
 
-    // Filtrar solo canchas disponibles
-    final List<Map<String, dynamic>> canchasDisponibles = 
-        canchas.where((cancha) => cancha['disponible'] == true).toList();
+    try {
+      // Lista simulada de canchas (podrás reemplazar con datos del backend)
+      final List<Map<String, dynamic>> canchas = [
+        {
+          'id': 1,
+          'nombre': 'Cancha La Pelota',
+          'ubicacion': 'Av. Principal 123',
+          'precio': 25.0,
+          'tipo': 'Fútbol 11',
+          'disponible': true,
+          'imagen': 'https://ejemplo.com/cancha1.jpg',
+        },
+        {
+          'id': 2,
+          'nombre': 'Cancha El Gol',
+          'ubicacion': 'Calle Secundaria 456',
+          'precio': 20.0,
+          'tipo': 'Fútbol 7',
+          'disponible': true,
+          'imagen': 'https://ejemplo.com/cancha2.jpg',
+        },
+        {
+          'id': 3,
+          'nombre': 'Cancha Champions',
+          'ubicacion': 'Centro Deportivo Norte',
+          'precio': 30.0,
+          'tipo': 'Fútbol 11',
+          'disponible': false,
+          'imagen': 'https://ejemplo.com/cancha3.jpg',
+        },
+      ];
+
+      // Filtrar solo canchas disponibles
+      canchasDisponibles = canchas.where((cancha) => cancha['disponible'] == true).toList();
+    } on AppException catch (e) {
+      errorMessage = e.message;
+      // Optionally show a SnackBar here
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      errorMessage = 'Ocurrió un error inesperado al cargar las canchas.';
+      // Optionally show a SnackBar here
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -197,15 +210,17 @@ class ClientHomeScreen extends StatelessWidget {
             
             // Lista de canchas o mensaje de no disponibles
             Expanded(
-              child: canchasDisponibles.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      itemCount: canchasDisponibles.length,
-                      itemBuilder: (context, index) {
-                        final cancha = canchasDisponibles[index];
-                        return _buildCanchaCard(context, cancha);
-                      },
-                    ),
+              child: errorMessage != null
+                  ? Center(child: Text(errorMessage!, style: const TextStyle(color: Colors.red, fontSize: 16))) // Display error message
+                  : canchasDisponibles.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          itemCount: canchasDisponibles.length,
+                          itemBuilder: (context, index) {
+                            final cancha = canchasDisponibles[index];
+                            return _buildCanchaCard(context, cancha);
+                          },
+                        ),
             ),
           ],
         ),
